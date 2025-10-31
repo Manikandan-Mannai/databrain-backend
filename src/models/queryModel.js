@@ -36,6 +36,7 @@ const querySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    result: { type: Array, default: [] }, 
   },
   { timestamps: true }
 );

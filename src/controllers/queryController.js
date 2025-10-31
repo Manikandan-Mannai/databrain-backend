@@ -68,6 +68,7 @@ export const runQuery = async (req, res) => {
       dataSourceId,
       config,
       createdBy: req.user._id,
+      result,
     });
 
     return res.json({
