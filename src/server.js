@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
+import queryRoutes from "./routes/queryRoutes.js";
 import cors from "cors";
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/data", dataRoutes);
+app.use("/api/queries", queryRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });

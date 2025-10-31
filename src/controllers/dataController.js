@@ -38,7 +38,12 @@ export const uploadCSV = [
           .on("data", (data) => {
             const cleaned = {};
             Object.keys(data).forEach((key) => {
-              cleaned[key.trim()] = data[key];
+              const rawValue = data[key].trim();
+              const cleanKey = key.trim();
+              cleaned[cleanKey] =
+                rawValue === "" || isNaN(rawValue)
+                  ? rawValue
+                  : Number(rawValue);
             });
             results.push(cleaned);
           })
