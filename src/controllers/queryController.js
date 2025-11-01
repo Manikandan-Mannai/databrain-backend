@@ -48,16 +48,25 @@ export const runQuery = async (req, res) => {
 
     if (config.groupBy) {
       const group = { _id: `$${config.groupBy}` };
+
       config.metrics.forEach((m) => {
+        if (!m.column) return;
         const field = `$${m.column}`;
-        group[m.as] = { [`$${m.aggregation.toLowerCase()}`]: field };
+        const alias =
+          m.as && m.as.trim() !== "" ? m.as : `${m.aggregation}_${m.column}`;
+        group[alias] = { [`$${m.aggregation.toLowerCase()}`]: field };
       });
+
       pipeline.push({ $group: group });
 
       const project = { _id: 0, [config.groupBy]: "$_id" };
       config.metrics.forEach((m) => {
-        project[m.as] = 1;
+        if (!m.column) return;
+        const alias =
+          m.as && m.as.trim() !== "" ? m.as : `${m.aggregation}_${m.column}`;
+        project[alias] = 1;
       });
+
       pipeline.push({ $project: project });
     }
 
@@ -86,3 +95,18 @@ export const runQuery = async (req, res) => {
       .json({ success: false, message: "Failed to run query" });
   }
 };
+
+export const getQueryById = async (req, res) => {
+  try {
+    const query = await Query.findById(req.params.id);
+    if (!query) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Query not found" });
+    }
+    res.json({ success: true, data: query });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to fetch query" });
+  }
+};
+

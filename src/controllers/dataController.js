@@ -104,3 +104,40 @@ export const uploadCSV = [
     }
   },
 ];
+
+export const getDataSources = async (req, res) => {
+  try {
+    const sources = await DataSource.find({ uploadedBy: req.user._id })
+      .select("name rowCount columns createdAt")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: sources,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const deleteDataSource = async (req, res) => {
+  try {
+    const dataSource = await DataSource.findOne({
+      _id: req.params.id,
+      uploadedBy: req.user._id,
+    });
+
+    if (!dataSource) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Data source not found" });
+    }
+
+    await mongoose.connection.collection(dataSource.collectionName).drop();
+    await dataSource.deleteOne();
+
+    res.json({ success: true, message: "Data source deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to delete" });
+  }
+};
