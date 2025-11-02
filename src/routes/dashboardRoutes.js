@@ -8,18 +8,13 @@ import {
 
 const router = express.Router();
 
-// 🧱 Save or update a dashboard
 router.post(
   "/save",
   protect,
   authorize("admin", "editor", "user"),
   saveDashboard
 );
-
-// 📋 Get all dashboards for the logged-in user
 router.get("/list", protect, getAllDashboards);
-
-// 🔍 Get single dashboard by ID
 router.get("/:id", protect, getDashboard);
 
 export default router;

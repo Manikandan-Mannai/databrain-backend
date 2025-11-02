@@ -11,7 +11,7 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/create", protect, createChart);
-router.get("/list", protect, getAllCharts);
+router.get("/list", getAllCharts);
 router.get("/:chartId", protect, getChartData);
 router.put("/:chartId", protect, updateChart);
 router.delete("/:chartId", protect, deleteChart);
