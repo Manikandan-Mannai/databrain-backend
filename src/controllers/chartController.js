@@ -5,10 +5,10 @@ export const createChart = async (req, res) => {
   try {
     const { title, type, queryId, config, series, data, layout } = req.body;
 
-    if (!title || !type || !queryId || !config || !series || !data)
+    if (!title || !type || !queryId || !config || !data)
       return res
         .status(400)
-        .json({ success: false, message: "Missing fields" });
+        .json({ success: false, message: "Missing required fields" });
 
     const query = await Query.findById(queryId);
     if (!query)
@@ -19,14 +19,39 @@ export const createChart = async (req, res) => {
     if (query.createdBy.toString() !== req.user._id.toString())
       return res.status(403).json({ success: false, message: "Access denied" });
 
+    if (type === "pie") {
+      if (!config.pieLabel || !config.pieValue)
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "pieLabel and pieValue required for pie charts",
+          });
+    } else {
+      if (!config.xAxisLabel)
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "xAxisLabel required for bar/line charts",
+          });
+      if (!Array.isArray(series) || series.length === 0)
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "At least one series required for bar/line charts",
+          });
+    }
+
     const chart = await Chart.create({
       title,
       type,
       queryId,
       config,
-      series,
+      series: type === "pie" ? [] : series,
       data,
-      layout,
+      layout: layout || { x: 0, y: 0, w: 6, h: 4 },
       createdBy: req.user._id,
     });
 
@@ -63,6 +88,10 @@ export const getChartData = async (req, res) => {
     )
       return res.status(403).json({ success: false, message: "Access denied" });
 
+    const resultData = chart.data.length
+      ? chart.data
+      : chart.queryId?.result || [];
+
     res.json({
       success: true,
       data: {
@@ -71,7 +100,7 @@ export const getChartData = async (req, res) => {
         config: chart.config,
         layout: chart.layout,
         series: chart.series,
-        data: chart.data.length ? chart.data : chart.queryId?.result || [],
+        data: resultData,
       },
     });
   } catch (error) {
@@ -106,10 +135,32 @@ export const updateChart = async (req, res) => {
     const { chartId } = req.params;
     const updates = req.body;
 
+    if (updates.type === "pie") {
+      if (!updates.config?.pieLabel || !updates.config?.pieValue)
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "pieLabel and pieValue required for pie charts",
+          });
+    } else if (updates.type && updates.type !== "pie") {
+      if (!updates.config?.xAxisLabel)
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "xAxisLabel required for bar/line charts",
+          });
+      if (!Array.isArray(updates.series) || updates.series.length === 0)
+        return res
+          .status(400)
+          .json({ success: false, message: "At least one series required" });
+    }
+
     const chart = await Chart.findOneAndUpdate(
       { _id: chartId, createdBy: req.user._id },
       updates,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!chart)
