@@ -58,10 +58,9 @@ The `chartController` ensures data integrity and enforces ownership-based access
 
 ### 5. **Dashboard System**
 
-Dashboards act as logical collections of charts.
-The `dashboardController` allows saving, fetching, and sharing dashboards with other users or setting them to public visibility.
+Dashboards act as logical collections of charts. The `dashboardController` handles saving, fetching, sharing, and editing dashboards, letting users update names, access levels, or remove charts through a clean modal interface.
 
-**PS:** Access levels (`private`, `shared`, `public`) are enforced in query filters, ensuring unauthorized users can’t fetch restricted dashboards even with direct URLs.
+**PS:** Access levels (`private`, `shared`, `public`) are enforced in query filters, and all edit/delete actions are moved inside the modal with confirmations to prevent unauthorized or accidental changes.
 
 ---
 
@@ -113,6 +112,7 @@ src/
 ├── uploads/       # Temporary file storage
 └── server.js      # Express app entry point
 ```
+
 ---
 
 ### 10. **Integration with Frontend**
@@ -161,4 +161,3 @@ npm run dev
 | Set Shared People                            | Role Management                              |
 | -------------------------------------------- | -------------------------------------------- |
 | <img src="./src/assets/11.png" width="400"/> | <img src="./src/assets/12.png" width="400"/> |
-
