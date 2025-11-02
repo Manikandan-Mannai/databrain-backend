@@ -18,6 +18,17 @@ const dashboardSchema = new mongoose.Schema(
         },
       },
     ],
+    accessLevel: {
+      type: String,
+      enum: ["public", "private", "shared"],
+      default: "private",
+    },
+    sharedWith: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
