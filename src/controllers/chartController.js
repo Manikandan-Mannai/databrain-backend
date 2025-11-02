@@ -21,27 +21,21 @@ export const createChart = async (req, res) => {
 
     if (type === "pie") {
       if (!config.pieLabel || !config.pieValue)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "pieLabel and pieValue required for pie charts",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "pieLabel and pieValue required for pie charts",
+        });
     } else {
       if (!config.xAxisLabel)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "xAxisLabel required for bar/line charts",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "xAxisLabel required for bar/line charts",
+        });
       if (!Array.isArray(series) || series.length === 0)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "At least one series required for bar/line charts",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "At least one series required for bar/line charts",
+        });
     }
 
     const chart = await Chart.create({
@@ -137,20 +131,16 @@ export const updateChart = async (req, res) => {
 
     if (updates.type === "pie") {
       if (!updates.config?.pieLabel || !updates.config?.pieValue)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "pieLabel and pieValue required for pie charts",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "pieLabel and pieValue required for pie charts",
+        });
     } else if (updates.type && updates.type !== "pie") {
       if (!updates.config?.xAxisLabel)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "xAxisLabel required for bar/line charts",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "xAxisLabel required for bar/line charts",
+        });
       if (!Array.isArray(updates.series) || updates.series.length === 0)
         return res
           .status(400)

@@ -1,5 +1,5 @@
-import Dashboard from "../models/dashboardModel.js";
 import Chart from "../models/chartModel.js";
+import Dashboard from "../models/dashboardModel.js";
 
 export const saveDashboard = async (req, res) => {
   const session = await Dashboard.db.startSession();

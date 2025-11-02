@@ -1,12 +1,12 @@
 
 import express from "express";
 import {
-  registerUser,
-  loginUser,
-  getUserProfile,
-  getAllUsers,
-  updateUserRole,
   deleteUser,
+  getAllUsers,
+  getUserProfile,
+  loginUser,
+  registerUser,
+  updateUserRole,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 

@@ -15,6 +15,6 @@ router.post(
   saveDashboard
 );
 router.get("/list", protect, getAllDashboards);
-router.get("/:id", getDashboard); 
+router.get("/:id", getDashboard);
 
 export default router;

@@ -1,10 +1,10 @@
 import express from "express";
 import {
   createChart,
-  getChartData,
-  getAllCharts,
-  updateChart,
   deleteChart,
+  getAllCharts,
+  getChartData,
+  updateChart,
 } from "../controllers/chartController.js";
 import { protect } from "../middleware/authMiddleware.js";
 

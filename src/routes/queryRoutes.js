@@ -1,6 +1,6 @@
 import express from "express";
-import { protect, authorize } from "../middleware/authMiddleware.js";
-import { runQuery, getQueryById } from "../controllers/queryController.js";
+import { getQueryById, runQuery } from "../controllers/queryController.js";
+import { authorize, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

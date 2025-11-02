@@ -1,11 +1,11 @@
 import express from "express";
-import { protect, authorize } from "../middleware/authMiddleware.js";
 import {
-  uploadCSV,
-  getDataSources,
   deleteDataSource,
+  getDataSources,
   previewDataSource,
+  uploadCSV,
 } from "../controllers/dataController.js";
+import { authorize, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
