@@ -1,11 +1,20 @@
-// backend/models/chartModel.ts
 import mongoose from "mongoose";
 
+const valueSchema = new mongoose.Schema({
+  key: { type: String, required: true },
+  value: { type: Number, required: true },
+});
+
+const dataPointSchema = new mongoose.Schema({
+  label: { type: String, required: true },
+  values: [valueSchema],
+});
+
 const seriesSchema = new mongoose.Schema({
-  yField: { type: String, required: true },
-  name: { type: String },
-  type: { type: String, enum: ["bar", "line", "area"], default: "bar" },
+  name: { type: String, required: true },
+  type: { type: String, enum: ["bar", "line", "area", "pie"], default: "bar" },
   color: { type: String },
+  yAxis: { type: String },
 });
 
 const chartSchema = new mongoose.Schema(
@@ -22,13 +31,23 @@ const chartSchema = new mongoose.Schema(
       required: true,
     },
     config: {
-      xAxis: { type: String, required: true },
+      xAxisLabel: { type: String, required: true },
+      yAxisLabel: { type: String },
+      multipleAxis: { type: Boolean, default: false },
       groupBy: { type: String },
-      series: [seriesSchema],
       stack: { type: Boolean, default: false },
-      pie: {
-        valueField: { type: String },
-        labelField: { type: String },
+      showLegend: { type: Boolean, default: true },
+      showGrid: { type: Boolean, default: true },
+    },
+    series: [seriesSchema],
+    data: {
+      type: [dataPointSchema],
+      default: [],
+      validate: {
+        validator: function (arr) {
+          return arr.length === 0 || arr.every((d) => d.label != null);
+        },
+        message: "Each data point must have a valid label",
       },
     },
     layout: {

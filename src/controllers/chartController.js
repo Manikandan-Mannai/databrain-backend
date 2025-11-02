@@ -3,62 +3,40 @@ import Query from "../models/queryModel.js";
 
 export const createChart = async (req, res) => {
   try {
-    const { title, type, queryId, config } = req.body;
+    const { title, type, queryId, config, series, data, layout } = req.body;
 
-    if (!title || !type || !queryId || !config) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields: title, type, queryId, config",
-      });
-    }
-
-    if (
-      type !== "pie" &&
-      (!config.xAxis ||
-        !Array.isArray(config.series) ||
-        config.series.length === 0)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Bar/Line charts require xAxis and at least one series",
-      });
-    }
-
-    if (
-      type === "pie" &&
-      (!config.pie?.labelField || !config.pie?.valueField)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Pie chart requires labelField and valueField",
-      });
-    }
+    if (!title || !type || !queryId || !config || !series || !data)
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing fields" });
 
     const query = await Query.findById(queryId);
-    if (!query) {
+    if (!query)
       return res
         .status(404)
         .json({ success: false, message: "Query not found" });
-    }
-    if (query.createdBy.toString() !== req.user._id.toString()) {
+
+    if (query.createdBy.toString() !== req.user._id.toString())
       return res.status(403).json({ success: false, message: "Access denied" });
-    }
 
     const chart = await Chart.create({
       title,
       type,
       queryId,
       config,
+      series,
+      data,
+      layout,
       createdBy: req.user._id,
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Chart created successfully",
       data: { chartId: chart._id },
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to create chart",
       error: error.message,
@@ -69,41 +47,35 @@ export const createChart = async (req, res) => {
 export const getChartData = async (req, res) => {
   try {
     const { chartId } = req.params;
+    const chart = await Chart.findById(chartId).populate(
+      "queryId",
+      "result name"
+    );
 
-    const chart = await Chart.findById(chartId).populate({
-      path: "queryId",
-      select: "result name",
-    });
-
-    if (!chart) {
+    if (!chart)
       return res
         .status(404)
         .json({ success: false, message: "Chart not found" });
-    }
 
     if (
       chart.createdBy.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
-    ) {
+    )
       return res.status(403).json({ success: false, message: "Access denied" });
-    }
 
-    const result = chart.queryId?.result || [];
-    const config = chart.config || {};
-    const chartType = chart.type;
-
-    return res.json({
+    res.json({
       success: true,
       data: {
-        result,
-        config,
-        type: chartType,
+        type: chart.type,
         title: chart.title,
+        config: chart.config,
         layout: chart.layout,
+        series: chart.series,
+        data: chart.data.length ? chart.data : chart.queryId?.result || [],
       },
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to fetch chart data",
       error: error.message,
@@ -114,20 +86,14 @@ export const getChartData = async (req, res) => {
 export const getAllCharts = async (req, res) => {
   try {
     const charts = await Chart.find({ createdBy: req.user._id })
-      .populate({
-        path: "queryId",
-        select: "name result",
-      })
-      .select("title type config layout createdAt")
+      .populate("queryId", "name result")
+      .select("title type config layout series data createdAt")
       .sort({ createdAt: -1 })
       .lean();
 
-    return res.json({
-      success: true,
-      data: charts,
-    });
+    res.json({ success: true, data: charts });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to fetch charts",
       error: error.message,
@@ -135,38 +101,51 @@ export const getAllCharts = async (req, res) => {
   }
 };
 
-export const updateChartLayout = async (req, res) => {
+export const updateChart = async (req, res) => {
   try {
     const { chartId } = req.params;
-    const { layout } = req.body;
-
-    if (!layout || typeof layout !== "object") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid layout" });
-    }
+    const updates = req.body;
 
     const chart = await Chart.findOneAndUpdate(
       { _id: chartId, createdBy: req.user._id },
-      { layout },
+      updates,
       { new: true }
     );
 
-    if (!chart) {
+    if (!chart)
       return res
         .status(404)
         .json({ success: false, message: "Chart not found or access denied" });
-    }
 
-    return res.json({
-      success: true,
-      message: "Layout updated",
-      data: { layout: chart.layout },
-    });
+    res.json({ success: true, message: "Chart updated", data: chart });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Failed to update layout",
+      message: "Failed to update chart",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteChart = async (req, res) => {
+  try {
+    const { chartId } = req.params;
+
+    const chart = await Chart.findOneAndDelete({
+      _id: chartId,
+      createdBy: req.user._id,
+    });
+
+    if (!chart)
+      return res
+        .status(404)
+        .json({ success: false, message: "Chart not found or access denied" });
+
+    res.json({ success: true, message: "Chart deleted" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete chart",
       error: error.message,
     });
   }

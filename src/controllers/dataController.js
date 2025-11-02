@@ -141,3 +141,41 @@ export const deleteDataSource = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to delete" });
   }
 };
+
+export const previewDataSource = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(parseInt(page), 1);
+    const limitNum = Math.min(Math.max(parseInt(limit), 1), 100);
+
+    const dataSource = await DataSource.findById(req.params.id);
+    if (!dataSource) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Data source not found" });
+    }
+
+    const collection = mongoose.connection.collection(
+      dataSource.collectionName
+    );
+    const totalRows = await collection.countDocuments();
+    const skip = (pageNum - 1) * limitNum;
+
+    const rows = await collection.find().skip(skip).limit(limitNum).toArray();
+
+    return res.json({
+      success: true,
+      columns: dataSource.columns,
+      rows,
+      page: pageNum,
+      limit: limitNum,
+      totalRows,
+      totalPages: Math.ceil(totalRows / limitNum),
+    });
+  } catch (error) {
+    console.error("Preview failed:", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch preview data" });
+  }
+};

@@ -1,15 +1,19 @@
 import express from "express";
-import { protect, authorize } from "../middleware/authMiddleware.js";
 import {
   createChart,
   getChartData,
   getAllCharts,
+  updateChart,
+  deleteChart,
 } from "../controllers/chartController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+router.post("/create", protect, createChart);
 router.get("/list", protect, getAllCharts);
 router.get("/:chartId", protect, getChartData);
-router.post("/create", protect, authorize("admin", "editor"), createChart);
+router.put("/:chartId", protect, updateChart);
+router.delete("/:chartId", protect, deleteChart);
 
 export default router;
